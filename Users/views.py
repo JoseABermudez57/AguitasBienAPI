@@ -1,6 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.decorators import throttle_classes
+from rest_framework.throttling import UserRateThrottle
 from .serializers import UserSerializer
 from .models import users
 import jwt
@@ -9,6 +11,7 @@ import datetime
 
 # Create your views here.
 class RegisterView(APIView):
+    @throttle_classes([UserRateThrottle])
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -17,6 +20,7 @@ class RegisterView(APIView):
 
 
 class LoginView(APIView):
+    @throttle_classes([UserRateThrottle])
     def post(self, request):
         email = request.data['email']
         password = request.data['password']
@@ -47,7 +51,7 @@ class LoginView(APIView):
 
 
 class UserView(APIView):
-
+    @throttle_classes([UserRateThrottle])
     def get(self, request):
         token = request.COOKIES.get('jwt')
 
@@ -65,6 +69,7 @@ class UserView(APIView):
 
 
 class LogoutView(APIView):
+    @throttle_classes([UserRateThrottle])
     def post(self, request):
         response = Response()
         response.delete_cookie('jwt')
